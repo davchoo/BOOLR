@@ -428,9 +428,75 @@
             }
         });
     }
-                input.className = "error";
-                errormsg.show(addressWidthInput.errormsg);
-                errormsg.show(dataInput.errormsg);
+    dialog.editRam = function(component,callback) {
+        if(!component) return;
+        dialog.show();
+        dialog.name.innerHTML = "Edit RAM";
+        dialog.container.innerHTML += "<i class='material-icons' style='font-size: 60px'>memory<i>";
+        dialog.container.innerHTML += `<p>Enter widths for component <i>${component.name}</i></p>`;
+
+
+        const addressWidthInput = createInput(
+            component.properties, "addressWidth", component.properties.addressWidth || "4",
+            function(addressWidth) {
+                let value = parseVariableInput(addressWidth)
+                return !isNaN(value) && 1 <= value && value <= 24;
+            },
+            "Address width in bits",
+            function() {
+                component.properties.addressWidth = parseVariableInput(this.value);
+                createVariableReference(this.value,component,["properties","addressWidth"]);
+            }
+        );
+        const dataWidthInput = createSelect(
+            component.properties, "dataWidth", component.properties.dataWidth || 4,
+            [{"value": 4, "text": "4"},
+             {"value": 8, "text": "8"},
+             {"value": 16, "text": "16"},
+             {"value": 32, "text": "32"}],
+            function() {
+                component.properties.dataWidth = +this.value;
+            }
+        );
+        setTimeout(() => addressWidthInput.focus(),10);
+        dialog.container.removeChild(dialog.container.children[dialog.container.children.length - 1]);
+
+        const errormsg = document.createElement("p");
+        errormsg.className = "errormsg";
+        errormsg.innerHTML = ".";
+        errormsg.hide = null;
+        errormsg.show = function(text) {
+            clearTimeout(this.hide);
+            this.innerHTML = text;
+            this.style.opacity = 1;
+            this.hide = setTimeout(() => this.style.opacity = 0, 2500);
+        }
+        dialog.container.appendChild(errormsg);
+
+        dialog.addOption("Cancel", function() {
+            if(!component.properties.addressWidth && !component.properties.data) {
+                component.properties.addressWidth = 0;
+                callback && callback();
+            }
+        });
+        dialog.addOption("OK",  function() {
+            let addressWidthValid = addressWidthInput.valid(addressWidthInput.value);
+            let dataWidthValid = dataWidthInput.valid(dataWidthInput.value);
+            if (addressWidthValid && dataWidthValid) {
+                addressWidthInput.apply();
+                dataWidthInput.apply();
+                callback && callback();
+            } else {
+                let error = "";
+                if (!addressWidthValid) {
+                    addressWidthInput.className = "error";
+                    error += addressWidthInput.errormsg + "<br>";
+                }
+                if (!dataWidthValid) {
+                    dataWidthInput.className = "error";
+                    error += dataWidthInput.errormsg + "<br>";
+                }
+                errormsg.show(error);
                 this.onmouseup = () => this.onmouseup = dialog.hide;
             }
         });

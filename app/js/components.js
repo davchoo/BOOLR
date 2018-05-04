@@ -3038,6 +3038,76 @@ class ROM extends Component {
     }
 }
 
+class RAM extends Component {
+    constructor(name,pos,data=[]) {
+        super(name,pos,3,8,{ type: "char", text: "RAM" });
+        setTimeout(() => {
+            if(!this.properties.hasOwnProperty("addressWidth")) {
+                dialog.editRam(this, this.create.bind(this));
+            }
+        }, 100);
+    }
+    
+    
+    create() {
+        if(!this.properties.hasOwnProperty("addressWidth")) {
+            return
+        }
+        let addressWidth = this.properties.addressWidth;
+        let dataWidth = this.properties.dataWidth;
+        this.height = addressWidth + dataWidth + 3;
+                
+        this.input = [];  
+        for (let i = 0; i < addressWidth; ++i) {
+            this.addInputPort({ side: 3, pos: i }, "A" + i);
+        }
+        for (let i = 0; i < dataWidth; ++i) {
+            this.addInputPort({ side: 3, pos: i + addressWidth }, "D" + i);
+        }
+        this.writeEnable = this.addInputPort({ side: 3, pos: addressWidth + dataWidth + 0 }, "WE");
+        this.readEnable = this.addInputPort({ side: 3, pos: addressWidth + dataWidth + 1 }, "RE");
+        this.clock = this.addInputPort({ side: 3, pos: addressWidth + dataWidth + 2 }, "Clock");
+        
+        this.output = [];
+        for(let i = 0; i < dataWidth; ++i) {
+            this.addOutputPort({ side: 1, pos: i }, "D" + i);
+        }
+        
+        this.data = []; //We don't want to save the data
+        this.function();
+    }
+    
+    function() {
+        let addr = 0;
+        for (let  i = 0; i < this.properties.addressWidth; i++) {
+            addr |= (this.input[i].value > 0) << i;
+        }
+        if (this.clock.value > 0) {
+            if (this.writeEnable.value > 0) {                
+                let val = 0;
+                for (let  i = 0; i < this.properties.dataWidth; i++) {
+                    val |= (this.input[i + this.properties.addressWidth].value > 0) << i;
+                }
+                this.data[addr] = val;
+            }
+            if (this.readEnable.value > 0) {
+                let content = this.data[addr];
+                for (let i = 0; i < this.output.length; i++) {
+                    this.output[i].value = (content & (1 << i)) > 0 ? 1 : 0;
+                }
+            }else{
+                for (let i = 0; i < this.output.length; i++) {
+                    this.output[i].value = 0;
+                }
+            }
+        }else{
+            for (let i = 0; i < this.output.length; i++) {
+                this.output[i].value = 0;
+            }
+        }
+    }
+}
+
 class Custom extends Component {
     constructor(
         name,

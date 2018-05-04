@@ -2943,6 +2943,37 @@ class Display extends Component {
 //     }
 // }
 
+class DisplayDecoder extends Component {
+    constructor(name, pos) {
+        super(name, pos, 3, 7, {type: "char", text: "B27"})
+        this.hex = [0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07,0x7F,0x67, 0x77, 0x7C, 0x58, 0x5E, 0x79, 0x71]
+        this.addInputPort({ side: 3, pos: 0 }, "1");
+        this.addInputPort({ side: 3, pos: 1 }, "2");
+        this.addInputPort({ side: 3, pos: 2 }, "4");
+        this.addInputPort({ side: 3, pos: 3 }, "8");
+        
+        
+        this.addOutputPort({ side: 1, pos: 0 }, "A");
+        this.addOutputPort({ side: 1, pos: 1 }, "B");
+        this.addOutputPort({ side: 1, pos: 2 }, "C");
+        this.addOutputPort({ side: 1, pos: 3 }, "D");
+        this.addOutputPort({ side: 1, pos: 4 }, "E");
+        this.addOutputPort({ side: 1, pos: 5 }, "F");
+        this.addOutputPort({ side: 1, pos: 6 }, "G");
+    }
+    
+    function() {
+        let value = 0;
+        for (let i = 0; i < this.input.length; i++) {
+            value |= this.input[i].value > 0 ? 1 << i : 0;
+        }
+        let display = this.hex[value];
+        for (let i = 0; i < this.output.length; i++) {
+            this.output[i].value = display >> i & 1;
+        }
+    }
+}
+
 class ROM extends Component {
     constructor(name,pos,data=[]) {
         super(name,pos,3,8,{ type: "char", text: "ROM" });

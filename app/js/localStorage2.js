@@ -211,6 +211,14 @@ function stringify(components = [], wires = [], selection) {
     }
 }
 
+function objectWithoutProperties(obj, keys, target) {
+    for (var i in obj) {
+        if (keys.indexOf(i) >= 0) continue;
+        if (!Object.prototype.hasOwnProperty.call(obj, i)) continue;
+        target[i] = obj[i]; 
+    }
+}
+
 /*
  Creates board from string
  @param {string} [data]
@@ -255,8 +263,11 @@ function parse(data) {
             component.components = parsed.components;
             component.wires = parsed.wires;
             delete component.componentData;
-            component.create();
         }
+        
+        objectWithoutProperties(data, ["input", "output"], component)
+
+        component.create && component.create();
 
         const input = data.input;
         for(let i = 0; i < component.input.length; ++i) {
@@ -273,8 +284,7 @@ function parse(data) {
             component.output[i].pos = output[i].pos;
         }
         delete data.output;
-
-        Object.assign(component,data);
+        
         component.pos = Object.assign({},data.pos);
 
         components[i] = component;

@@ -2981,11 +2981,48 @@ class ROM extends Component {
         setTimeout(() => {
             if(!this.properties.hasOwnProperty("data") ||
                !this.properties.hasOwnProperty("addressWidth")) {
-                dialog.editRom(this);
+                dialog.editRom(this, this.create.bind(this));
             }
         }, 100);
     }
-
+    
+    create() {
+        if (!this.properties.hasOwnProperty("data") ||
+            !this.properties.hasOwnProperty("addressWidth")) {
+            return
+        }
+        this.height =
+            Math.max(
+                this.properties.addressWidth,
+                this.properties.dataWidth);
+        this.input = [];
+        for (let i = 0; i < this.properties.addressWidth; ++i) {
+            this.addInputPort({ side: 3, pos: i }, "A" + i);
+        }
+        
+        this.output = [];
+        for (let i = 0; i < this.properties.dataWidth; ++i) {
+            this.addOutputPort({ side: 1, pos: i }, "O" + i);
+        }
+        
+        this.updateData(this.properties.data);
+    }
+    
+    updateData(data) {
+        this.properties.data = data;
+        // Sanatize and store parsed data as an array of numbers
+        const contents = this.properties.data.replace(/\s/g, '').toUpperCase();
+        const dataWidth = this.properties.dataWidth;
+        this.properties.rom = Array(Math.pow(2, this.properties.addressWidth)).fill(0);
+        for (let i = 0; i < this.properties.rom.length; i++) {
+            const start = i * dataWidth / 4; 
+            const end   = start + dataWidth / 4;
+            const content = contents.slice(start, end);
+            this.properties.rom[i] = parseInt(content, 16);
+        }
+        this.function();
+    }
+    
     function() {
         let addr = 0;
         for (let  i = 0; i < this.input.length; i++) {

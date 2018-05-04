@@ -170,20 +170,13 @@
             inputs.push(
                 createTextArea(
                     component.properties, "data", component.properties.data,
-                    () => true,
+                    function(value) {
+                        let re = /^[0-9A-Fa-f]+$/g;
+                        return re.test(value);
+                    },
                     "Enter hex-encoded data",
                     function() {
-                        component.properties.data = this.value;
-                        const dataWidth = component.properties.dataWidth;
-                        const contents = this.value.replace(/\s/g, '').toUpperCase();
-                        let data = Array(Math.pow(2, component.properties.addressWidth)).fill(0);
-                        for (let i = 0; i < data.length; i++) {
-                            const start = i * dataWidth / 4; 
-                            const end   = start + dataWidth / 4;
-                            const content = contents.slice(start, end);
-                            data[i] = parseInt(content, 16);
-                        }
-                        component.properties.rom = data;
+                        component.updateData(this.value);
                     }
                 )
             );
@@ -352,18 +345,13 @@
 
         const addressWidthInput = createInput(
             component.properties, "addressWidth", component.properties.addressWidth || "4",
-            addressWidth => !isNaN(parseVariableInput(addressWidth)),
+            function(addressWidth) {
+                let value = parseVariableInput(addressWidth)
+                return !isNaN(value) && 1 <= value && value <= 24;
+            },
             "Address width in bits",
             function() {
                 component.properties.addressWidth = parseVariableInput(this.value);
-                component.height =
-                    Math.max(
-                        component.properties.addressWidth,
-                        component.properties.dataWidth);
-                component.input = [];
-                for(let i = 0; i < component.properties.addressWidth; ++i) {
-                    component.addInputPort({ side: 3, pos: i });
-                }
                 createVariableReference(this.value,component,["properties","addressWidth"]);
             }
         );
@@ -375,35 +363,18 @@
              {"value": 32, "text": "32"}],
             function() {
                 component.properties.dataWidth = +this.value;
-                component.height =
-                    Math.max(
-                        component.properties.addressWidth,
-                        component.properties.dataWidth);
-                component.output = [];
-                for(let i = 0; i < component.properties.dataWidth; ++i) {
-                    component.addOutputPort({ side: 1, pos: i });
-                }
             }
         );
         const dataInput = createTextArea(
             component.properties, "data", component.properties.data || "",
-            // TODO better validation?
-            () => true,
+            function(value) {
+                let re = /^[0-9A-Fa-f]+$/g;
+                return re.test(value);
+            },
             "Enter hex-encoded data",
             function() {
                 // Keep original data
                 component.properties.data = this.value;
-                // Sanatize and store parsed data as an array of numbers
-                const contents = this.value.replace(/\s/g, '').toUpperCase();
-                const dataWidth = component.properties.dataWidth;
-                let data = Array(Math.pow(2, component.properties.addressWidth)).fill(0);
-                for (let i = 0; i < data.length; i++) {
-                    const start = i * dataWidth / 4; 
-                    const end   = start + dataWidth / 4;
-                    const content = contents.slice(start, end);
-                    data[i] = parseInt(content, 16);
-                }
-                component.properties.rom = data;
                 createVariableReference(this.value,component,["properties","rom"]);
             }
         );
@@ -430,13 +401,33 @@
             }
         });
         dialog.addOption("OK",  function() {
-            if(addressWidthInput.valid(addressWidthInput.value) &&
-               dataInput.valid(dataInput.value)) {
+            let addressWidthValid = addressWidthInput.valid(addressWidthInput.value);
+            let dataWidthValid = dataWidthInput.valid(dataWidthInput.value);
+            let dataValid = dataInput.valid(dataInput.value);
+            if (addressWidthValid && dataWidthValid && dataValid) {
                 addressWidthInput.apply();
                 dataWidthInput.apply();
                 dataInput.apply();
                 callback && callback();
             } else {
+                let error = "";
+                if (!addressWidthValid) {
+                    addressWidthInput.className = "error";
+                    error += addressWidthInput.errormsg + "<br>";
+                }
+                if (!dataWidthValid) {
+                    dataWidthInput.className = "error";
+                    error += dataWidthInput.errormsg + "<br>";
+                }
+                if (!dataValid) {
+                    dataInput.className = "error";
+                    error += dataInput.errormsg;
+                }
+                errormsg.show(error);
+                this.onmouseup = () => this.onmouseup = dialog.hide;
+            }
+        });
+    }
                 input.className = "error";
                 errormsg.show(addressWidthInput.errormsg);
                 errormsg.show(dataInput.errormsg);

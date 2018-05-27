@@ -1,7 +1,7 @@
 function select(Component) {
     Selected = Component;
     toolbar.message(`Selected ${Component.name} ${"gate"}`);
-    document.getElementById("list").style.display = "none";
+    hideLists();
 }
 
 const toolbar = document.getElementById("toolbar");
@@ -25,38 +25,75 @@ toolbar.message = function(msg,type) {
     },3000);
 }
 
-// Input/Output list
-const list = document.getElementById("list");
-list.show = function() {
-    list.style.display = "block";
-    setTimeout(() => {
-        list.style.opacity = 1;
-        list.style.transform = "scale(1)";
-    },1);
-}
-list.hide = function() {
-    list.style.opacity = 0;
-    list.style.transform = "scale(.5) translateX(-63px) translateY(150px)";
-    c.focus();
-    setTimeout(() => list.style.display = "none",200);
+const listButtons = document.querySelectorAll(".slot[data-list]");
+const lists = {};
+
+function isListsHidden() {
+    for (let id in lists) {
+        if (lists[id].style.display != "none") {
+            return false;
+        }
+    }
+    return true;
 }
 
-document.getElementsByClassName("slot")[0].onmousedown = function() {
-    document.getElementById("toolbartip").style.display = "none";
-    if(list.style.display == "none") list.show();
-    else list.hide();
-}
-document.getElementsByClassName("slot")[0].onmouseup = function() {
-    document.getElementsByClassName("slot")[0].focus();
-}
-
-document.getElementById("list").onblur = function() {
-    list.hide();
+function hideLists() {
+    for (let id in lists) {
+        if (lists[id].style.display != "none") {
+            lists[id].hide();
+        }
+    }
 }
 
-const listItems = document.getElementById("list").children;
-for(let i = 0; i < listItems.length; ++i) {
-    listItems[i].onmouseenter = function() { this.style.background = "#222" };
-    listItems[i].onmouseleave = function() { this.style.background = "#111" };
-    listItems[i].onmouseup = function() { this.onclick() };
+for (let i = 0; i < listButtons.length;i++) {
+    let listButton = listButtons[i];
+    let list = document.getElementById(listButton.dataset.list);
+
+    if (!list) continue;
+
+    lists[list.id] = list;
+
+    let yOff = i == 0 ? 150 : 75;
+    list.style.transform = `scale(.5) translateX(-63px) translateY(${yOff}px)`;
+
+    list.show = function() {
+        list.style.display = "block";
+        setTimeout(() => {
+            list.style.opacity = 1;
+            list.style.transform = "scale(1)";
+        }, 1);
+    }
+
+    list.hide = function() {
+        list.style.opacity = 0;
+        list.style.transform = `scale(.5) translateX(-63px) translateY(${yOff}px)`;
+        c.focus();
+        setTimeout(() => list.style.display = "none", 200);
+    }
+    
+    listButton.onmousedown = function() {
+        document.getElementById("toolbartip").style.display = "none";
+        if(list.style.display == "none") {
+            hideLists();
+            list.show();
+        } else {
+            list.hide();
+        }
+    }
+
+    listButton.onmouseup = function() {
+        listButton.focus();
+    }
+    
+    list.onblur = function() {
+        list.hide();
+    }
+    
+    const listItems = list.children;
+    for(let i = 0; i < listItems.length; ++i) {
+        listItems[i].onmouseenter = function() { this.style.background = "#222" };
+        listItems[i].onmouseleave = function() { this.style.background = "#111" };
+        listItems[i].onmouseup = function() { this.onclick() };
+    }
+    
 }

@@ -2339,14 +2339,12 @@ class Clock extends Component {
 class Debug extends Component {
     constructor(name,pos) {
         super(name,pos,2,1,{ type: "icon", text: "report_problem" });
-        this.addInputPort({ side: 3, pos: 0 });
-        this.value = 0;
+      this.addInputPort({ side: 3, pos: 0 });
     }
 
     function() {
-        this.input[0].value = this.value;
-        notifications.push(this.name + ": " + this.value);
-        boolrConsole.log(this.name + ": " + this.value);
+        notifications.push(this.name + ": " + this.input[0].value);
+        boolrConsole.log(this.name + ": " + this.input[0].value);
     }
 }
 

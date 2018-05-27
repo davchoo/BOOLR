@@ -116,7 +116,7 @@
     margin-right: 5px;
 }
 
-#toolbar #list {
+#toolbar .list {
     position: absolute;
     left: 0;
     bottom: 50px;
@@ -139,21 +139,21 @@
     transition: opacity .2s, transform .2s;
 }
 
-#toolbar #list::-webkit-scrollbar-track {
+#toolbar .list::-webkit-scrollbar-track {
     background: rgba(255,255,255,.1);
 }
 
-#toolbar #list::-webkit-scrollbar-thumb {
+#toolbar .list::-webkit-scrollbar-thumb {
     background: rgba(255,255,255,.3);
     border-radius: 5px;
 }
 
-#toolbar #list li {
+#toolbar .list li {
     padding: 10px;
     border-radius: 5px;
     cursor: pointer;
 }
 
-#toolbar #list li:hover, #toolbar #list li:active {
+#toolbar .list li:hover, #toolbar .list li:active {
     background: #ddd;
 }

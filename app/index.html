@@ -225,7 +225,9 @@
         <div id="toolbar">
             <div id="toast"></div>
 
-            <div class="slot" tooltip="Input and output ports">I/O</div>
+            <div class="slot" data-list="io" tooltip="Input and output ports">I/O</div>
+            <div class="slot" data-list="misc" tooltip="Misc components">Misc</div>
+            <div class="slot" data-list="debug" tooltip="Debug components">Debug</div>
             <div class="slot" tooltip="NOT gate" onmousedown="event.which == 3 ? dialog.truthTable(NOT) : select(NOT)">!</div>
             <div class="slot" tooltip="AND gate" onmousedown="event.which == 3 ? dialog.truthTable(AND) : select(AND)">&</div>
             <div class="slot" tooltip="OR gate" onmousedown="event.which == 3 ? dialog.truthTable(OR) : select(OR)">|</div>
@@ -233,23 +235,29 @@
             <div class="slot" tooltip="Custom component" onmousedown="select(Custom)"><i class="material-icons">memory</i></div>
             <div class="slot" tooltip="Saved components" onmousedown="dialog.savedCustomComponents()"><i class="material-icons">list</i></div>
 
-            <ul id="list" tabindex="1" style="display: none">
+            <ul id="io" class="list" tabindex="1" style="display: none">
                 <li onclick="select(Input)">Input</li>
                 <li onclick="select(Output)">Output</li>
                 <li onclick="select(Button)">Button</li>
                 <li onclick="select(Constant)">Constant</li>
-                <li onclick="select(Delay)">Delay</li>
                 <li onclick="select(Clock)">Clock</li>
                 <li onclick="select(LED)">LED</li>
                 <li onclick="select(Display)">Display</li>
-                <li onclick="select(Debug)">Debug</li>
                 <li onclick="select(Beep)">Beep</li>
                 <li onclick="select(Counter)">Counter</li>
-                <li onclick="select(TimerStart)">TimerStart</li>
-                <li onclick="select(TimerEnd)">TimerEnd</li>
+            </ul>
+
+            <ul id="misc" class="list" tabindex="2" style="display: none">
+                <li onclick="select(Delay)">Delay</li>
                 <li onclick="select(DisplayDecoder)">DisplayDecoder</li>
                 <li onclick="select(RAM)">RAM</li>
                 <li onclick="select(ROM)">ROM</li>
+            </ul>
+
+            <ul id="debug" class="list" tabindex="3" style="display: none">
+                <li onclick="select(Debug)">Debug</li>
+                <li onclick="select(TimerStart)">TimerStart</li>
+                <li onclick="select(TimerEnd)">TimerEnd</li>
             </ul>
         </div>
         <div id="toolbartip"></div>

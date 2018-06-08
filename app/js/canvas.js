@@ -329,7 +329,7 @@ c.onmousedown = function(e) {
             return false;
         }
         else {
-            if(isListsHidden() || selecting) {
+            if(!isListsHidden() || selecting) {
                 contextMenu.hide();
                 hideLists();
                 selecting = null;

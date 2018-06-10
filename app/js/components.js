@@ -3106,6 +3106,115 @@ class RAM extends Component {
     }
 }
 
+class MUX extends Component {
+    constructor(name,pos,data=[]) {
+        super(name,pos,8,8,{ type: "char", text: "Mux" });
+        setTimeout(() => {
+            if(!this.properties.hasOwnProperty("selectionWidth")) {
+                dialog.editMux(this, this.create.bind(this));
+            }
+        }, 100);
+    }
+    
+    
+    create() {
+        if(!this.properties.hasOwnProperty("selectionWidth")) {
+            return
+        }
+        let selectionWidth = this.properties.selectionWidth;
+        let dataWidth = this.properties.dataWidth;
+        let totalSelections = Math.pow(2, selectionWidth);
+        this.height = dataWidth * totalSelections;
+        this.width = selectionWidth;
+                
+        this.input = [];  
+        for(let i = 0; i < dataWidth * totalSelections; ++i) {
+            let pack = Math.floor(i / dataWidth);
+            this.addInputPort({ side: 3, pos: i }, "D" + (i % dataWidth) + " " + pack);
+        }
+        for (let i = 0; i < selectionWidth; ++i) {
+            this.addInputPort({ side: 2, pos: i }, "S" + i);
+        }
+
+        this.output = [];
+        
+        for (let i = 0; i < dataWidth; ++i) {
+            this.addOutputPort({ side: 1, pos: i }, "O" + i);
+        }
+        this.function();
+    }
+    
+    function() {
+        let dataWidth = this.properties.dataWidth;
+        let selectionWidth = this.properties.selectionWidth;
+        let totalSelections = Math.pow(2, selectionWidth);
+        let selected = 0;
+        
+        for (let i = 0; i < selectionWidth; i++) {
+            selected |= this.input[dataWidth * totalSelections + i].value > 0 ? 1 << i : 0;
+        }
+
+        for (let i = 0; i < dataWidth; i++) {
+            this.output[i].value = this.input[dataWidth * selected + i].value;
+        }
+    }
+}
+
+class DEMUX extends Component {
+    constructor(name,pos,data=[]) {
+        super(name,pos,8,8,{ type: "char", text: "Demux" });
+        setTimeout(() => {
+            if(!this.properties.hasOwnProperty("selectionWidth")) {
+                dialog.editDemux(this, this.create.bind(this));
+            }
+        }, 100);
+    }
+    
+    
+    create() {
+        if(!this.properties.hasOwnProperty("selectionWidth")) {
+            return
+        }
+        let selectionWidth = this.properties.selectionWidth;
+        let dataWidth = this.properties.dataWidth;
+        let totalSelections = Math.pow(2, selectionWidth);
+        this.height = dataWidth * totalSelections + totalSelections - 1;
+        this.width = selectionWidth > 3 ? selectionWidth : 3;
+                
+        this.input = [];  
+        for (let i = 0; i < dataWidth; ++i) {
+            this.addInputPort({ side: 3, pos: i }, "D" + i);
+        }
+        for (let i = 0; i < selectionWidth; ++i) {
+            this.addInputPort({ side: 2, pos: i }, "S" + i);
+        }
+
+        this.output = [];
+        for(let i = 0; i < dataWidth * totalSelections; ++i) {
+            let pack = Math.floor(i / dataWidth);
+            this.addOutputPort({ side: 1, pos: i }, "O" + (i % dataWidth) + " " + pack);
+        }
+        this.function();
+    }
+    
+    function() {
+        let dataWidth = this.properties.dataWidth;
+        let selectionWidth = this.properties.selectionWidth;
+        let totalSelections = Math.pow(2, selectionWidth);
+        let selected = 0;
+        
+        for (let i = 0; i < selectionWidth; i++) {
+            selected |= this.input[dataWidth + i].value > 0 ? 1 << i : 0;
+        }
+
+        for (let i = 0; i < totalSelections; i++) {
+            for (let j = 0; j < dataWidth; j++) {
+                this.output[dataWidth * i + j].value = i == selected ? this.input[j].value : 0;
+            }
+        }
+    }
+}
+
 class Custom extends Component {
     constructor(
         name,
